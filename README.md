@@ -135,7 +135,8 @@ An existing database must be backed up and checked against the migration history
 before importing; copying it into an initialized deployment is not an automatic
 migration procedure.
 
-Fonts are bundled through the `geist` package; builds do not contact Google Fonts.
+UI text uses the device's Songti/serif fonts. Code fonts are bundled through the
+`geist` package; builds and page visits do not contact Google Fonts.
 Dependency installation needs access to npm and `binaries.prisma.sh` (including
 its artifact checksum files).
 When building behind a trusted TLS inspection proxy, the Dockerfile optionally
