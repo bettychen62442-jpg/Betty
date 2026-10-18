@@ -9,7 +9,6 @@ import rehypeHighlight from "rehype-highlight";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -86,17 +85,17 @@ export default function QuestionDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="question-reading min-w-0 max-w-3xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/questions">
-            <Button variant="ghost" size="icon">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 flex-1 items-start gap-2 sm:gap-3">
+          <Link href="/questions" aria-label="返回题库" title="返回题库" className="shrink-0">
+            <Button variant="ghost" size="icon" className="size-11 sm:size-8" aria-label="返回题库">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold">{question.title}</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl leading-relaxed font-bold [overflow-wrap:anywhere] sm:text-2xl">{question.title}</h1>
             <div className="flex gap-2 mt-1 flex-wrap">
               {question.category && (
                 <Badge variant="secondary">{question.category.name}</Badge>
@@ -108,10 +107,10 @@ export default function QuestionDetailPage() {
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Select value={status} onValueChange={(v) => v && updateStatus(v)}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue />
+            <SelectTrigger aria-label="掌握状态" className="h-11 min-w-0 flex-1 sm:h-8 sm:w-[120px] sm:flex-none">
+              <SelectValue>{status === "MASTERED" ? "已掌握" : status === "REVIEWING" ? "复习中" : "未掌握"}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="UNFAMILIAR">未掌握</SelectItem>
@@ -119,14 +118,17 @@ export default function QuestionDetailPage() {
               <SelectItem value="MASTERED">已掌握</SelectItem>
             </SelectContent>
           </Select>
-          <Link href={`/questions/${id}/edit`}>
-            <Button variant="outline" size="icon">
+          <Link href={`/questions/${id}/edit`} aria-label="编辑题目" title="编辑题目">
+            <Button variant="outline" size="icon" className="size-11 sm:size-8" aria-label="编辑题目">
               <Pencil className="h-4 w-4" />
             </Button>
           </Link>
           <Button
             variant="outline"
             size="icon"
+            className="size-11 sm:size-8"
+            aria-label="删除题目"
+            title="删除题目"
             onClick={() => setShowDelete(true)}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
@@ -135,29 +137,22 @@ export default function QuestionDetailPage() {
       </div>
 
       {/* Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">题目内容</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="prose dark:prose-invert max-w-none">
+      <section aria-labelledby="question-content-heading" className="space-y-3 border-t pt-5">
+          <h2 id="question-content-heading" className="text-base font-semibold">题目内容</h2>
+          <div className="question-document prose dark:prose-invert max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
               {question.content}
             </ReactMarkdown>
           </div>
-        </CardContent>
-      </Card>
+      </section>
 
       {/* Answer */}
       {question.answer && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">参考答案</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <section aria-labelledby="question-answer-heading" className="space-y-3 border-t pt-5">
+            <h2 id="question-answer-heading" className="text-base font-semibold">参考答案</h2>
             {question.answer.startsWith("<") ? (
               <div
-                className="prose prose-sm dark:prose-invert max-w-none [&_mark]:bg-yellow-200 [&_mark]:dark:bg-yellow-800 [&_mark]:px-0.5 [&_mark]:rounded [&_img]:cursor-pointer [&_img]:hover:opacity-90 [&_img]:transition-opacity"
+                className="question-document prose dark:prose-invert max-w-none [&_mark]:bg-yellow-200 [&_mark]:dark:bg-yellow-800 [&_mark]:px-0.5 [&_mark]:rounded [&_img]:cursor-pointer [&_img]:hover:opacity-90 [&_img]:transition-opacity"
                 dangerouslySetInnerHTML={{ __html: question.answer }}
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
@@ -169,7 +164,7 @@ export default function QuestionDetailPage() {
               />
             ) : (
               <div
-                className="prose dark:prose-invert max-w-none [&_img]:cursor-pointer [&_img]:hover:opacity-90"
+                className="question-document prose dark:prose-invert max-w-none [&_img]:cursor-pointer [&_img]:hover:opacity-90"
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
                   if (target.tagName === "IMG") {
@@ -183,16 +178,13 @@ export default function QuestionDetailPage() {
                 </ReactMarkdown>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </section>
       )}
 
       {/* Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">统计信息</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4 text-sm">
+      <section aria-labelledby="question-stats-heading" className="space-y-3 border-t pt-5">
+        <h2 id="question-stats-heading" className="text-base font-semibold">统计信息</h2>
+        <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
           <div>
             <span className="text-muted-foreground">复习次数</span>
             <p className="text-lg font-bold">{question.timesReviewed}</p>
@@ -215,20 +207,18 @@ export default function QuestionDetailPage() {
               <p>{question.sourceCompany}</p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {/* Linked Interviews */}
       {question.interviewQuestions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">相关面试</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <section aria-labelledby="question-interviews-heading" className="space-y-3 border-t pt-5">
+          <h2 id="question-interviews-heading" className="text-base font-semibold">相关面试</h2>
+          <div className="space-y-2">
             {question.interviewQuestions.map((iq) => (
               <Link key={iq.id} href={`/interviews/${iq.interview.id}`}>
-                <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent">
-                  <div>
+                <div className="flex flex-col gap-2 rounded-lg border p-3 hover:bg-accent sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 [overflow-wrap:anywhere]">
                     <span className="font-medium">{iq.interview.company}</span>
                     <span className="text-muted-foreground"> — {iq.interview.position}</span>
                   </div>
@@ -243,8 +233,8 @@ export default function QuestionDetailPage() {
                 </div>
               </Link>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       )}
 
       {/* Delete Dialog */}

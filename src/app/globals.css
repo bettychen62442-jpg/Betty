@@ -128,3 +128,67 @@
     @apply font-sans;
   }
 }
+
+.question-document {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 1rem;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+.question-document :is(p, ul, ol, blockquote, pre, table) {
+  margin-block: 0.85em;
+}
+
+.question-document > :first-child { margin-top: 0; }
+.question-document > :last-child { margin-bottom: 0; }
+.question-document :is(h1, h2, h3, h4) {
+  margin-block: 1.25em 0.5em;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.question-document h1 { font-size: 1.5rem; }
+.question-document h2 { font-size: 1.25rem; }
+.question-document h3 { font-size: 1.125rem; }
+.question-document ul { list-style: disc; padding-left: 1.5em; }
+.question-document ol { list-style: decimal; padding-left: 1.5em; }
+.question-document li + li { margin-top: 0.35em; }
+.question-document a { text-decoration: underline; text-underline-offset: 3px; }
+.question-document img { display: block; max-width: 100%; height: auto; margin-block: 1em; }
+.question-document pre {
+  max-width: 100%;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: var(--muted);
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.question-document code { font-family: var(--font-geist-mono), monospace; }
+.question-document table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.question-document :is(th, td) {
+  min-width: 7rem;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.question-document th { background: var(--muted); font-weight: 600; }
+.question-document blockquote { border-left: 3px solid var(--border); padding-left: 1rem; color: var(--muted-foreground); }
+
+@media (max-width: 767px) {
+  .question-form :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .question-form [data-slot="label"] { margin-bottom: 0.5rem; }
+  .question-form [data-slot="select-trigger"] { width: 100%; }
+}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   description: "Record, organize, and review interview questions with AI-powered audio analysis",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,11 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
-      <body className="flex h-full bg-background">
+      <body className="flex h-dvh flex-col overflow-hidden bg-background md:flex-row">
         <TooltipProvider>
           <AppSidebar />
-          <main className="flex-1 overflow-auto ml-64">
-            <div className="max-w-5xl mx-auto px-6 py-8">{children}</div>
+          <main id="main-content" className="min-h-0 min-w-0 flex-1 overflow-auto md:ml-64">
+            <div className="mx-auto max-w-5xl px-4 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-8">{children}</div>
           </main>
           <Toaster />
         </TooltipProvider>

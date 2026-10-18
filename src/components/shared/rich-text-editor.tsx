@@ -17,9 +17,10 @@ import {
   Undo2,
   Redo2,
   Link,
-  Image,
+  Image as ImageIcon,
   Loader2,
   Type,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,10 +117,13 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "prose prose-sm dark:prose-invert max-w-none focus:outline-none",
+          "question-document prose dark:prose-invert max-w-none focus:outline-none",
           "min-h-[var(--editor-min-height)] p-3"
         ),
         style: `--editor-min-height: ${minHeight}`,
+        role: "textbox",
+        "aria-label": placeholder,
+        "aria-multiline": "true",
       },
     },
     immediatelyRender: false,
@@ -269,25 +273,31 @@ export function RichTextEditor({
   }
 
   return (
-    <div className={cn("rounded-md border overflow-hidden", className)}>
+    <div className={cn("min-w-0 overflow-hidden rounded-md border", className)}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b bg-muted/30">
+      <div role="group" aria-label="答案格式工具" className="flex flex-wrap items-center gap-1 border-b bg-muted/30 p-2 sm:gap-0.5 sm:py-1.5">
         {/* Bold */}
         <Button
+          type="button"
           variant="ghost" size="sm"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={cn("h-8 w-8 p-0", editor.isActive("bold") && "bg-accent")}
+          className={cn("size-10 p-0 sm:size-8", editor.isActive("bold") && "bg-accent")}
           title="加粗"
+          aria-label="加粗"
+          aria-pressed={editor.isActive("bold")}
         >
           <Bold className="h-4 w-4" />
         </Button>
 
         {/* Underline */}
         <Button
+          type="button"
           variant="ghost" size="sm"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={cn("h-8 w-8 p-0", editor.isActive("underline") && "bg-accent")}
+          className={cn("size-10 p-0 sm:size-8", editor.isActive("underline") && "bg-accent")}
           title="下划线"
+          aria-label="下划线"
+          aria-pressed={editor.isActive("underline")}
         >
           <UnderlineIcon className="h-4 w-4" />
         </Button>
@@ -295,11 +305,12 @@ export function RichTextEditor({
         {/* Font Size */}
         <Popover open={fontSizeOpen} onOpenChange={setFontSizeOpen}>
           <PopoverTrigger
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-8 px-1.5 gap-0.5 hover:bg-accent hover:text-accent-foreground"
+            className="inline-flex size-10 shrink-0 items-center justify-center gap-0.5 rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:size-8"
             title="字体大小"
+            aria-label="字体大小"
           >
             <Type className="h-4 w-4" />
-            <span className="text-[10px] leading-none mt-0.5">▼</span>
+            <ChevronDown className="size-3" />
           </PopoverTrigger>
           <PopoverContent className="w-36" align="start">
             <div className="space-y-1">
@@ -326,16 +337,17 @@ export function RichTextEditor({
           </PopoverContent>
         </Popover>
 
-        <div className="w-px h-5 bg-border mx-1" />
+        <div className="mx-1 hidden h-5 w-px bg-border sm:block" />
 
         {/* Text Color */}
         <Popover open={textColorOpen} onOpenChange={setTextColorOpen}>
           <PopoverTrigger
             className={cn(
-              "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground",
+              "inline-flex size-10 shrink-0 items-center justify-center rounded-md p-0 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:size-8",
               editor.isActive("textStyle") && "bg-accent"
             )}
             title="字体颜色"
+            aria-label="字体颜色"
           >
             <Palette className="h-4 w-4" />
           </PopoverTrigger>
@@ -347,8 +359,9 @@ export function RichTextEditor({
                   <button
                     key={color} type="button"
                     onClick={() => setColor(color)}
-                    className="h-6 w-6 rounded border cursor-pointer hover:scale-110 transition-transform"
+                    className="size-8 rounded border cursor-pointer hover:scale-110 transition-transform"
                     style={{ backgroundColor: color }} title={color}
+                    aria-label={`字体颜色 ${color}`}
                   />
                 ))}
               </div>
@@ -397,10 +410,11 @@ export function RichTextEditor({
         <Popover open={highlightOpen} onOpenChange={setHighlightOpen}>
           <PopoverTrigger
             className={cn(
-              "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground",
+              "inline-flex size-10 shrink-0 items-center justify-center rounded-md p-0 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:size-8",
               editor.isActive("highlight") && "bg-accent"
             )}
             title="荧光标记"
+            aria-label="荧光标记"
           >
             <Highlighter className="h-4 w-4" />
           </PopoverTrigger>
@@ -412,8 +426,9 @@ export function RichTextEditor({
                   <button
                     key={color} type="button"
                     onClick={() => setHighlight(color)}
-                    className="h-6 w-6 rounded border cursor-pointer hover:scale-110 transition-transform"
+                    className="size-8 rounded border cursor-pointer hover:scale-110 transition-transform"
                     style={{ backgroundColor: color }} title={color}
+                    aria-label={`荧光颜色 ${color}`}
                   />
                 ))}
               </div>
@@ -427,16 +442,17 @@ export function RichTextEditor({
           </PopoverContent>
         </Popover>
 
-        <div className="w-px h-5 bg-border mx-1" />
+        <div className="mx-1 hidden h-5 w-px bg-border sm:block" />
 
         {/* Insert Link */}
         <Popover open={linkOpen} onOpenChange={setLinkOpen}>
           <PopoverTrigger
             className={cn(
-              "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground",
+              "inline-flex size-10 shrink-0 items-center justify-center rounded-md p-0 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:size-8",
               editor.isActive("link") && "bg-accent"
             )}
             title="插入链接"
+            aria-label="插入链接"
             onClick={openLinkPopover}
           >
             <Link className="h-4 w-4" />
@@ -452,7 +468,7 @@ export function RichTextEditor({
                   placeholder="https://example.com"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && setLink()}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setLink(); } }}
                 />
               </div>
               <div className="flex gap-2 justify-between">
@@ -475,16 +491,18 @@ export function RichTextEditor({
         {/* Insert Image */}
         <>
           <Button
+            type="button"
             variant="ghost" size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className={cn("h-8 w-8 p-0", uploading && "opacity-50")}
+            className={cn("size-10 p-0 sm:size-8", uploading && "opacity-50")}
             title="上传图片"
+            aria-label="上传图片"
             disabled={uploading}
           >
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Image className="h-4 w-4" />
+              <ImageIcon className="h-4 w-4" />
             )}
           </Button>
           <input
@@ -496,20 +514,22 @@ export function RichTextEditor({
           />
         </>
 
-        <div className="w-px h-5 bg-border mx-1" />
+        <div className="mx-1 hidden h-5 w-px bg-border sm:block" />
 
         {/* Undo / Redo */}
         <Button
+          type="button"
           variant="ghost" size="sm"
           onClick={() => editor.chain().focus().undo().run()}
-          className="h-8 w-8 p-0" title="撤销"
+          className="size-10 p-0 sm:size-8" title="撤销" aria-label="撤销"
         >
           <Undo2 className="h-4 w-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost" size="sm"
           onClick={() => editor.chain().focus().redo().run()}
-          className="h-8 w-8 p-0" title="重做"
+          className="size-10 p-0 sm:size-8" title="重做" aria-label="重做"
         >
           <Redo2 className="h-4 w-4" />
         </Button>
@@ -518,7 +538,7 @@ export function RichTextEditor({
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="prose prose-sm dark:prose-invert max-w-none [&_.ProseMirror]:min-h-[var(--editor-min-height)] [&_.ProseMirror]:p-3 [&_.ProseMirror]:outline-none [&_.ProseMirror]:h-full [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md"
+        className="min-w-0 max-w-full [&_.ProseMirror]:min-h-[var(--editor-min-height)] [&_.ProseMirror]:p-3 [&_.ProseMirror]:outline-none [&_.ProseMirror]:h-full [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md"
         style={{ minHeight } as React.CSSProperties}
       />
     </div>

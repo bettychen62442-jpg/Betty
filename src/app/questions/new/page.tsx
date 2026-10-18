@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -115,18 +114,16 @@ export default function NewQuestionPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="question-form min-w-0 max-w-2xl space-y-6 pb-24 sm:pb-0">
       <div>
         <h1 className="text-2xl font-bold">添加题目</h1>
         <p className="text-muted-foreground">添加一道新的面试题目到题库</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">基本信息</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <section aria-labelledby="question-basic-heading" className="space-y-4 border-t pt-5">
+          <h2 id="question-basic-heading" className="text-base font-semibold">基本信息</h2>
+          <div className="space-y-4">
             <div>
               <Label htmlFor="title">题目标题 *</Label>
               <Input
@@ -157,27 +154,26 @@ export default function NewQuestionPage() {
                 minHeight="300px"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">分类</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+        <section aria-labelledby="question-category-heading" className="space-y-4 border-t pt-5">
+          <h2 id="question-category-heading" className="text-base font-semibold">分类</h2>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <Label>难度</Label>
                 <div className="flex items-center gap-3 mt-2">
                   <Slider
+                    aria-label="难度"
                     value={[form.difficulty]}
                     onValueChange={(v) => { const arr = Array.isArray(v) ? v : [v]; setForm({ ...form, difficulty: arr[0] ?? 3 }); }}
                     min={1}
                     max={5}
                     step={1}
-                    className="flex-1"
+                    className="min-w-0 flex-1"
                   />
-                  <span className="text-sm w-8">{"⭐".repeat(form.difficulty)}</span>
+                  <span className="w-12 shrink-0 text-right text-sm tabular-nums">{form.difficulty} / 5</span>
                 </div>
               </div>
               <div>
@@ -186,8 +182,8 @@ export default function NewQuestionPage() {
                   value={form.status}
                   onValueChange={(v) => v && setForm({ ...form, status: v })}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger aria-label="掌握状态">
+                    <SelectValue>{form.status === "MASTERED" ? "已掌握" : form.status === "REVIEWING" ? "复习中" : "未掌握"}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="UNFAMILIAR">未掌握</SelectItem>
@@ -204,7 +200,7 @@ export default function NewQuestionPage() {
                   value={form.categoryId}
                   onValueChange={(v) => v && setForm({ ...form, categoryId: v })}
                 >
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger aria-label="分类" className="min-w-0 flex-1">
                     <span className="text-sm truncate">
                       {categories.find((c) => c.id === form.categoryId)?.name || "选择分类"}
                     </span>
@@ -227,7 +223,7 @@ export default function NewQuestionPage() {
                   </SelectContent>
                 </Select>
                 <Popover open={newCatOpen} onOpenChange={setNewCatOpen}>
-                  <PopoverTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10">
+                  <PopoverTrigger aria-label="新建分类" title="新建分类" className="inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:size-10">
                     <Plus className="h-4 w-4" />
                   </PopoverTrigger>
                   <PopoverContent className="w-56" align="end">
@@ -239,7 +235,7 @@ export default function NewQuestionPage() {
                           placeholder="如: TypeScript"
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && createCategory()}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void createCategory(); } }}
                         />
                       </div>
                       <div className="flex gap-2 justify-end">
@@ -265,21 +261,23 @@ export default function NewQuestionPage() {
               </div>
             </div>
             <div>
-              <Label>来源公司</Label>
+              <Label htmlFor="source-company">来源公司</Label>
               <Input
+                id="source-company"
                 value={form.sourceCompany}
                 onChange={(e) => setForm({ ...form, sourceCompany: e.target.value })}
                 placeholder="如: Google"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>
+        <div className="fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:border-0 sm:bg-transparent sm:p-0">
+          <Button type="submit" className="h-11 flex-1 sm:h-8 sm:flex-none" disabled={saving}>
+            {saving ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
             {saving ? "保存中..." : "创建题目"}
           </Button>
-          <Button type="button" variant="outline" onClick={() => router.back()}>
+          <Button type="button" className="h-11 sm:h-8" variant="outline" onClick={() => router.back()}>
             取消
           </Button>
         </div>
