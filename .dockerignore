@@ -1,0 +1,14 @@
+.git
+node_modules
+.next
+out
+coverage
+.env*
+*.db
+*.db-*
+*.sqlite*
+data
+public/uploads
+src/generated
+*.log
+*.tsbuildinfo
