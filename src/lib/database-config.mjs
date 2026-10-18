@@ -20,5 +20,14 @@ export function getDatabaseUrl(migration = false) {
     url.searchParams.set("sslmode", migration ? "require" : "verify-full");
     if (migration) url.searchParams.set("sslaccept", "strict");
   }
+  const caPath = process.env.DATABASE_CA_CERT_PATH;
+  if (caPath) {
+    // Prisma's migration engine and node-postgres use different CA parameters.
+    url.searchParams.delete("sslcert");
+    url.searchParams.delete("sslrootcert");
+    url.searchParams.set(migration ? "sslcert" : "sslrootcert", caPath);
+    url.searchParams.set("sslmode", migration ? "require" : "verify-full");
+    if (migration) url.searchParams.set("sslaccept", "strict");
+  }
   return url.toString();
 }

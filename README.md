@@ -62,6 +62,27 @@ private bucket before listening on `PORT`. The backend uses a small PostgreSQL
 connection pool and verified TLS for remote database connections. `/api/health`
 checks the database without exposing records. Other pages and APIs require login.
 
+### Database TLS Certificates
+
+If deployment fails with Prisma `P1011` and `self-signed certificate in certificate
+chain`, download the database CA certificate from the Supabase project's database
+settings, under **SSL Configuration**. Obtain it from your own project's dashboard,
+not an unverified third-party site. In the Render service's **Environment** settings:
+
+1. Add a **Secret File** named `supabase-ca.crt`, containing the complete PEM
+   certificate, including its `BEGIN CERTIFICATE` and `END CERTIFICATE` lines.
+2. Add the environment variable
+   `DATABASE_CA_CERT_PATH=/etc/secrets/supabase-ca.crt`.
+3. Save and redeploy. Keep the existing database URL, project URL, and secret key.
+
+The secret file is needed only at runtime, not while building the image. Both
+Prisma migrations and the application's PostgreSQL driver use that CA while
+keeping certificate verification enabled. The setting does not affect SQLite.
+Do not disable TLS verification or add `accept_invalid_certs`, `no-verify`, or
+`NODE_TLS_REJECT_UNAUTHORIZED=0` to work around a certificate failure. A CA
+certificate is public trust material; a database password or a private key is not
+a CA certificate and must never be pasted into the certificate file.
+
 Free storage is **not a promise of permanent retention**. A website restart does
 not delete the separate Supabase data, but quotas, project deletion, account
 restrictions, inactivity policies, and provider policy changes can affect access
