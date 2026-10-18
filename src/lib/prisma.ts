@@ -1,14 +1,16 @@
 import { PrismaClient, $Enums } from "@/generated/prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { getDatabaseProvider, getDatabaseUrl } from "./database-config.mjs";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createPrismaClient(): PrismaClient {
-  const adapter = new PrismaLibSql({
-    url: process.env.DATABASE_URL || `file:${process.cwd()}/dev.db`,
-  });
+  const adapter = getDatabaseProvider() === "postgresql"
+    ? new PrismaPg({ connectionString: getDatabaseUrl(), max: 3 })
+    : new PrismaLibSql({ url: getDatabaseUrl() });
   return new PrismaClient({ adapter });
 }
 

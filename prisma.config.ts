@@ -2,13 +2,16 @@
 // npm install --save-dev prisma dotenv
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
+import { getDatabaseProvider, getDatabaseUrl } from "./src/lib/database-config.mjs";
+
+const postgres = getDatabaseProvider() === "postgresql";
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: postgres ? "prisma/postgres/schema.prisma" : "prisma/schema.prisma",
   migrations: {
-    path: "prisma/migrations",
+    path: postgres ? "prisma/postgres/migrations" : "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"] || `file:${process.cwd()}/dev.db`,
+    url: getDatabaseUrl(true),
   },
 });

@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Enums ──────────────────────────────────────────────
+
+model Category {
+  id                String              @id @default(cuid())
+  name              String              @unique
+  slug              String              @unique
+  description       String?
+  parentId          String?
+  parent            Category?           @relation("CategoryTree", fields: [parentId], references: [id])
+  children          Category[]          @relation("CategoryTree")
+  questions         Question[]
+  knowledgeArticles KnowledgeArticle[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model Tag {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  questions QuestionTag[]
+  createdAt DateTime       @default(now())
+}
+
+model Question {
+  id               String              @id @default(cuid())
+  title            String
+  content          String              // Markdown body
+  answer           String?             // Model answer (Markdown)
+  difficulty       Int                 @default(3) // 1-5
+  status           String              @default("UNFAMILIAR") // UNFAMILIAR | REVIEWING | MASTERED
+  categoryId       String?
+  category         Category?           @relation(fields: [categoryId], references: [id])
+  tags             QuestionTag[]
+  source           String?
+  sourceCompany    String?
+  timesReviewed    Int                 @default(0)
+  timesCorrect     Int                 @default(0)
+  lastReviewed     DateTime?
+  extractedFrom    ExtractedQuestion?  @relation("ExtractedToQuestion")
+  interviewQuestions InterviewQuestion[]
+  studyCard        StudyCard?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuestionTag {
+  questionId String
+  tagId      String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, tagId])
+}
+
+// ── Interview Models ──────────────────────────────────
+
+model InterviewLog {
+  id              String              @id @default(cuid())
+  company         String
+  position        String
+  round           String              @default("OTHER") // PHONE_SCREEN | TECHNICAL_1 | TECHNICAL_2 | ONSITE | BEHAVIORAL | SYSTEM_DESIGN | HR | OTHER
+  interviewDate   DateTime            @default(now())
+  result          String              @default("PENDING") // PASS | FAIL | PENDING
+  resultReason    String?
+  overallNotes    String?
+  audioRecordings AudioRecording[]
+  questions       InterviewQuestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InterviewQuestion {
+  id              String       @id @default(cuid())
+  interviewId     String
+  interview       InterviewLog @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  questionId      String?
+  question        Question?    @relation(fields: [questionId], references: [id])
+  questionText    String?      // ad-hoc text when not linked to bank
+  selfScore       Int?         // 1-5
+  wasCorrect      Boolean?
+  interviewerNote String?
+  sortOrder       Int          @default(0)
+}
+
+// ── Audio & AI Models ─────────────────────────────────
+
+model AudioRecording {
+  id               String          @id @default(cuid())
+  interviewId      String?
+  interview        InterviewLog?   @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+  fileName         String
+  originalName     String
+  storagePath      String
+  fileSize         Int
+  durationSeconds  Int?
+  mimeType         String
+  processingStatus String          @default("UPLOADED") // UPLOADED | TRANSCRIBING | TRANSCRIBED | EXTRACTING | COMPLETED | FAILED
+  transcript       Transcript?
+  createdAt        DateTime        @default(now())
+}
+
+model Transcript {
+  id                String              @id @default(cuid())
+  audioId           String              @unique
+  audio             AudioRecording      @relation(fields: [audioId], references: [id], onDelete: Cascade)
+  fullText          String
+  segments          String?             // JSON array of {start, end, text}
+  language          String?
+  providerName      String?
+  providerMetadata  String?             // JSON: tokens used, cost, model
+  extractedQuestions ExtractedQuestion[]
+  createdAt         DateTime            @default(now())
+}
+
+model ExtractedQuestion {
+  id                  String     @id @default(cuid())
+  transcriptId        String
+  transcript          Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  questionText        String
+  answerText          String?
+  suggestedCategory   String?
+  suggestedTags       String?    // JSON array
+  suggestedDifficulty Int?
+  status              String     @default("PENDING_REVIEW") // PENDING_REVIEW | ACCEPTED | REJECTED | MODIFIED
+  reviewNote          String?
+  promotedQuestion    Question?  @relation("ExtractedToQuestion", fields: [promotedQuestionId], references: [id])
+  promotedQuestionId  String?    @unique
+
+  createdAt DateTime @default(now())
+}
+
+// ── Study Models ──────────────────────────────────────
+
+model StudyCard {
+  id           String    @id @default(cuid())
+  questionId   String    @unique
+  question     Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  easiness     Float     @default(2.5)
+  interval     Int       @default(0)   // days
+  repetitions  Int       @default(0)
+  nextReviewAt DateTime  @default(now())
+  lastReviewAt DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+// ── Knowledge Base ────────────────────────────────────
+
+model KnowledgeArticle {
+  id         String   @id @default(cuid())
+  title      String
+  content    String   // Markdown
+  type       String   @default("general") // general | star_story | system_design | behavioral
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  tags       String?   // JSON array of tag names
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ── Job Applications ──────────────────────────────────
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  company     String
+  position    String
+  status      String   @default("APPLIED") // APPLIED | SCREENING | INTERVIEWING | OFFERED | REJECTED | ACCEPTED | WITHDRAWN
+  appliedDate DateTime @default(now())
+  link        String?
+  notes       String?
+  location    String?
+  salaryRange String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([appliedDate])
+}

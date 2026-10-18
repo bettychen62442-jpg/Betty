@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search-filter";
 
 // ── Query ───────────────────────────────────────────
 
@@ -18,8 +19,8 @@ export async function listQuestions(params: {
 
   if (search) {
     where.OR = [
-      { title: { contains: search } },
-      { content: { contains: search } },
+      { title: containsText(search) },
+      { content: containsText(search) },
     ];
   }
   if (status) where.status = status;
@@ -200,7 +201,7 @@ export async function deleteCategory(id: string) {
 
 export async function listTags(search?: string) {
   return prisma.tag.findMany({
-    where: search ? { name: { contains: search } } : undefined,
+    where: search ? { name: containsText(search) } : undefined,
     include: { _count: { select: { questions: true } } },
     orderBy: { name: "asc" },
     take: 50,

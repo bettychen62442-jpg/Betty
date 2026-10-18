@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search-filter";
 
 export async function listApplications(params: {
   search?: string;
@@ -13,8 +14,8 @@ export async function listApplications(params: {
   if (status) where.status = status;
   if (search) {
     where.OR = [
-      { company: { contains: search } },
-      { position: { contains: search } },
+      { company: containsText(search) },
+      { position: containsText(search) },
     ];
   }
 

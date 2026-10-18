@@ -28,34 +28,58 @@ when the password is missing. Development remains open unless a password is set.
 
 The AI provider currently uses mock responses, not a hosted GPT model.
 
-Run `npm run test:auth` to check access protection and `npm run build` to check
-the production bundle.
+Run `npm test` to check access protection, database configuration, and storage
+boundaries, and `npm run build` to check the production bundle.
 
-## Deploy on Render
+## Free Cloud Deployment
 
 [Deploy to Render](https://render.com/deploy?repo=https://github.com/bettychen62442-jpg/Betty)
 
-The Blueprint in `render.yaml` creates one Docker web service in Singapore with
-a paid Starter instance and a 1 GB persistent disk. Review Render's displayed
-instance and disk charges before creating it. A free instance cannot provide
-the persistent disk required by this configuration.
+The default Blueprint uses a **Render Free** web service with **no paid disk**.
+Database records and uploaded images/audio are stored separately in a
+**Supabase Free** project. Remain on both providers' Free plans and within their
+quotas; do not select paid upgrades or paid resources. Check current eligibility,
+limits, and pricing on their dashboards before creating resources.
 
-1. Open the deployment link, sign into Render, and authorize access to `Betty`.
-2. Review the Blueprint and its charges, then create the service.
-3. Wait for the service to become Live. Its public URL is shown by Render;
-   append `/questions` to open the question bank.
-4. In the service's Environment settings, retrieve the generated `APP_PASSWORD`.
+1. Create a Supabase project on its Free plan. Keep its database password private.
+2. In Supabase's Connect dialog, copy the **Session pooler** PostgreSQL URL on
+   port 5432, including the URL-encoded database password. This is `DATABASE_URL`.
+   Use the session pooler, not the transaction pooler or an IPv6-only direct URL.
+3. Obtain the project URL (`SUPABASE_URL`) and a server-only secret API key
+   (`SUPABASE_SECRET_KEY`) from the project's API settings. A legacy service-role
+   key is also supported. Never use a browser/publishable key for server storage.
+4. Open the Render deployment link, authorize `Betty`, confirm the **Free** plan,
+   and enter those three values securely when prompted. Do not put them in chat
+   or Git. The service applies migrations and creates a private storage bucket.
+5. Wait for the service to become Live. Open the URL shown by Render and append
+   `/questions`. In the service's Environment settings, retrieve `APP_PASSWORD`.
    Log in with username `coach` and that password. Do not share it in chat or Git.
 
-Render builds from `main` using the Dockerfile. Startup applies database
-migrations before listening on Render's `PORT`. `/api/health` checks database
-access without exposing records or requiring a password. Other pages and APIs
-require authentication; use the Render HTTPS URL.
+Render supplies the non-secret `DATABASE_PROVIDER=postgresql` build argument and
+runtime variable. This selects the PostgreSQL client and migrations under
+`prisma/postgres`; local development still defaults to SQLite. Startup checks the
+private bucket before listening on `PORT`. The backend uses a small PostgreSQL
+connection pool and verified TLS for remote database connections. `/api/health`
+checks the database without exposing records. Other pages and APIs require login.
+
+Free storage is **not a promise of permanent retention**. A website restart does
+not delete the separate Supabase data, but quotas, project deletion, account
+restrictions, inactivity policies, and provider policy changes can affect access
+or retention. Free services may sleep or pause. Paused access is not necessarily
+deletion; restore it using the provider dashboard when applicable. Neither a paid
+nor a free service replaces independent backups.
+
+Keep original uploads on your computer. Back up the PostgreSQL database with
+`pg_dump` (or Supabase CLI `db dump`), and download the private storage bucket
+contents separately. A database backup alone does not include uploaded files.
+Do not assume automatic database backups or permanent file retention on Free.
+Keep backup credentials private and test restoration before relying on a backup.
 
 The new deployment starts with an empty database. The uploaded archive's personal
 database and images remain separate and are not imported automatically. Keep a
 backup before a separate private data migration. A Blueprint file and a GitHub
-push alone do not create or verify a live Render service.
+push alone do not create or verify a live Render service. Actual cloud storage
+and provider quotas must be checked with your own accounts after configuration.
 
 ## Server Deployment
 

@@ -1,9 +1,6 @@
 import { NextRequest } from "next/server";
-import fs from "node:fs/promises";
 import path from "node:path";
-import { existsSync } from "node:fs";
-
-const UPLOAD_DIR = path.join(process.cwd(), "data", "images");
+import { getStorageProvider } from "@/storage/storage-factory";
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
@@ -28,17 +25,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    if (!existsSync(UPLOAD_DIR)) {
-      await fs.mkdir(UPLOAD_DIR, { recursive: true });
-    }
-
     const ext = file.name.split(".").pop() || "png";
     const id = crypto.randomUUID();
     const filename = `${id}.${ext}`;
-    const filepath = path.join(UPLOAD_DIR, filename);
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filepath, buffer);
+    await getStorageProvider(undefined, "images").save(file, filename);
 
     const url = `/api/upload/image?file=${filename}`;
 
@@ -59,10 +49,9 @@ export async function GET(request: NextRequest) {
 
   // Sanitize filename to prevent path traversal
   const safeName = path.basename(file);
-  const filepath = path.join(UPLOAD_DIR, safeName);
 
   try {
-    const buffer = await fs.readFile(filepath);
+    const buffer = await getStorageProvider(undefined, "images").getBuffer(safeName);
     const ext = safeName.split(".").pop()?.toLowerCase();
     const mimeTypes: Record<string, string> = {
       png: "image/png",
@@ -77,7 +66,7 @@ export async function GET(request: NextRequest) {
     return new Response(new Uint8Array(buffer), {
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400",
+        "Cache-Control": "private, no-store",
       },
     });
   } catch {

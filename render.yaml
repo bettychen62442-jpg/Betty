@@ -3,21 +3,25 @@ services:
   - type: web
     name: betty-interview-coach
     runtime: docker
-    plan: starter
+    plan: free
     region: singapore
     branch: main
     healthCheckPath: /api/health
-    disk:
-      name: interview-data
-      mountPath: /app/data
-      sizeGB: 1
     envVars:
+      - key: DATABASE_PROVIDER
+        value: postgresql
       - key: DATABASE_URL
-        value: file:/app/data/interview-coach.db
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: interview-coach
       - key: AI_PROVIDER
         value: mock
       - key: STORAGE_PROVIDER
-        value: local
+        value: supabase
       - key: APP_USERNAME
         value: coach
       - key: APP_PASSWORD
